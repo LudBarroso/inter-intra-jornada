@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Jornada</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --grad-a:#6C63EA;
+    --grad-b:#8B3FC9;
+    --ink:#1E1B39;
+    --muted:#6B7280;
+    --field-bg:#F4F5FA;
+    --field-border:#E7E8F3;
+    --card-white:#FFFFFF;
+    --purple:#6C63EA;
+    --purple-dark:#5645D6;
+    --purple-tint:#EEECFD;
+    --green:#16A34A;
+    --green-tint:#E7F7EC;
+    --red:#DC3B33;
+    --red-tint:#FCEAE9;
+    --amber:#B07C1F;
+    --amber-tint:#FBF1DC;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:linear-gradient(135deg, var(--grad-a), var(--grad-b));
+    font-family:'Inter', sans-serif;
+    color:var(--ink);
+    padding:40px 16px;
+    display:flex;
+    justify-content:center;
+  }
+  .card{
+    width:100%;
+    max-width:520px;
+    background:var(--card-white);
+    border-radius:28px;
+    padding:36px 32px 32px;
+    box-shadow:0 30px 60px -20px rgba(30,20,80,0.45);
+  }
+  .head{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    margin-bottom:6px;
+  }
+  .head .emoji{ font-size:1.7rem; }
+  h1{
+    font-family:'Poppins', sans-serif;
+    font-weight:700;
+    font-size:1.45rem;
+    margin:0;
+    text-align:center;
+  }
+  .sub{
+    text-align:center;
+    color:var(--muted);
+    font-size:0.85rem;
+    margin:0 0 24px;
+  }
+
+  /* mode selector */
+  .mode-select{
+    display:flex;
+    gap:10px;
+    background:var(--field-bg);
+    border-radius:16px;
+    padding:6px;
+    margin-bottom:28px;
+  }
+  .mode-btn{
+    flex:1;
+    padding:12px 10px;
+    border:none;
+    border-radius:12px;
+    background:transparent;
+    font-family:'Poppins', sans-serif;
+    font-size:0.88rem;
+    font-weight:600;
+    color:var(--muted);
+    cursor:pointer;
+  }
+  .mode-btn.selected{
+    background:#fff;
+    color:var(--purple-dark);
+    box-shadow:0 4px 14px -4px rgba(30,20,80,0.25);
+  }
+
+  .panel{ display:none; }
+  .panel.visible{ display:block; }
+
+  .sum-box{
+    border-radius:18px;
+    padding:22px 18px;
+    border:2px solid var(--field-border);
+    background:var(--field-bg);
+    text-align:center;
+    margin-bottom:24px;
+  }
+  .sum-box.active{ border-color:var(--purple); background:var(--purple-tint); }
+  .sum-box.ok{ border-color:var(--green); background:var(--green-tint); }
+  .sum-box.bad{ border-color:var(--red); background:var(--red-tint); }
+  .sum-box.warn{ border-color:var(--amber); background:var(--amber-tint); }
+  .sum-box .val{
+    font-family:'Poppins', sans-serif;
+    font-weight:700;
+    font-size:2rem;
+    color:var(--ink);
+  }
+  .sum-box.active .val{ color:var(--purple-dark); }
+  .sum-box.ok .val{ color:var(--green); }
+  .sum-box.bad .val{ color:var(--red); }
+  .sum-box.warn .val{ color:var(--amber); }
+  .sum-box .lbl{
+    font-size:0.8rem;
+    color:var(--muted);
+    margin-top:8px;
+    line-height:1.4;
+  }
+
+  .fields{
+    background:var(--field-bg);
+    border-radius:20px;
+    padding:22px 20px 8px;
+    margin-bottom:22px;
+  }
+  .field{ margin-bottom:16px; }
+  .field label{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    font-size:0.83rem;
+    font-weight:600;
+    color:#3B3A55;
+    margin-bottom:8px;
+  }
+  input[type="time"], input[type="date"]{
+    width:100%;
+    font-family:'Inter', sans-serif;
+    font-size:1rem;
+    font-weight:500;
+    color:var(--ink);
+    background:#fff;
+    border:1px solid var(--field-border);
+    border-radius:12px;
+    padding:13px 14px;
+  }
+  input:focus{ outline:2px solid var(--purple); outline-offset:1px; }
+
+  .pair{ display:flex; gap:12px; }
+  .pair .field{ flex:1; }
+
+  .toggle-pills{
+    display:flex;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .pill-btn{
+    flex:1;
+    padding:11px 10px;
+    border-radius:12px;
+    border:1px solid var(--field-border);
+    background:#fff;
+    font-family:'Inter', sans-serif;
+    font-size:0.85rem;
+    font-weight:600;
+    color:var(--muted);
+    cursor:pointer;
+    text-align:center;
+  }
+  .pill-btn.selected{
+    background:var(--purple);
+    border-color:var(--purple);
+    color:#fff;
+  }
+
+  #dsrDatesWrap{ display:none; }
+  .dsr-date-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .dsr-date-row .dsr-tag{
+    font-size:0.75rem;
+    color:var(--muted);
+    min-width:70px;
+    font-weight:500;
+  }
+  .dsr-date-row .remove-dsr{
+    background:none;
+    border:none;
+    color:var(--muted);
+    font-size:0.78rem;
+    cursor:pointer;
+    text-decoration:underline;
+    padding:0;
+  }
+  .remove-dsr:hover{ color:var(--red); }
+  .add-dsr{
+    background:none;
+    border:none;
+    color:var(--purple-dark);
+    font-size:0.83rem;
+    font-weight:600;
+    cursor:pointer;
+    padding:0 0 14px;
+    text-decoration:underline;
+  }
+
+  button.calc-btn{
+    width:100%;
+    padding:16px;
+    border:none;
+    border-radius:16px;
+    background:linear-gradient(90deg, var(--grad-a), var(--grad-b));
+    color:#fff;
+    font-family:'Poppins', sans-serif;
+    font-weight:600;
+    font-size:1rem;
+    cursor:pointer;
+    box-shadow:0 12px 24px -8px rgba(108,99,234,0.55);
+  }
+  button.calc-btn:hover{ filter:brightness(1.05); }
+
+  .detail{
+    display:none;
+    margin-top:22px;
+    padding-top:18px;
+    border-top:1px solid var(--field-border);
+    gap:10px;
+  }
+  .detail .mark{
+    width:22px; height:22px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:0.75rem; font-weight:700; color:#fff;
+    flex-shrink:0; margin-top:1px;
+  }
+  .detail .mark.ok{ background:var(--green); }
+  .detail .mark.bad{ background:var(--red); }
+  .detail .mark.warn{ background:var(--amber); }
+  .detail .text .title{ font-size:0.88rem; font-weight:600; }
+  .detail .text .desc{ font-size:0.8rem; color:var(--muted); margin-top:2px; line-height:1.4; }
+
+  footer{
+    margin-top:24px;
+    font-size:0.72rem;
+    color:var(--muted);
+    line-height:1.5;
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <div class="head">
+    <span class="emoji">⏰</span>
+    <h1>Calculadora de Jornada</h1>
+  </div>
+  <p class="sub">Verifique o intervalo intrajornada ou o descanso interjornada, conforme a CLT</p>
+
+  <div class="mode-select">
+    <button type="button" class="mode-btn selected" id="modeIntraBtn">Intrajornada</button>
+    <button type="button" class="mode-btn" id="modeInterBtn">Interjornada</button>
+  </div>
+
+  <!-- INTRAJORNADA PANEL -->
+  <div class="panel visible" id="panelIntra">
+
+    <div class="fields">
+      <div class="field">
+        <label>🕐 Horário de Entrada</label>
+        <input type="time" id="entrada" value="08:00">
+      </div>
+      <div class="pair">
+        <div class="field">
+          <label>🕐 Início do Intervalo</label>
+          <input type="time" id="intIni" value="12:00">
+        </div>
+        <div class="field">
+          <label>🕐 Fim do Intervalo</label>
+          <input type="time" id="intFim" value="13:00">
+        </div>
+      </div>
+      <div class="field">
+        <label>🕐 Horário de Saída</label>
+        <input type="time" id="saidaIntra" value="17:00">
+      </div>
+    </div>
+
+    <button class="calc-btn" id="calcIntraBtn">Calcular Intervalo</button>
+
+    <div class="sum-box" id="boxIntra" style="margin-top:22px; margin-bottom:0;">
+      <div class="val" id="valIntra">--:--</div>
+      <div class="lbl" id="lblIntra">Duração do intervalo</div>
+    </div>
+
+    <div class="detail" id="detailIntra"></div>
+  </div>
+
+  <!-- INTERJORNADA PANEL -->
+  <div class="panel" id="panelInter">
+
+    <div class="fields">
+      <div class="field">
+        <label>📅 Data da jornada</label>
+        <input type="date" id="dataInter">
+      </div>
+      <div class="field">
+        <label>🕐 Horário de Saída</label>
+        <input type="time" id="saidaInter" value="17:00">
+      </div>
+
+      <div class="field">
+        <label>🌙 Há DSR ou feriado antes do retorno?</label>
+        <div class="toggle-pills">
+          <button type="button" class="pill-btn selected" id="dsrNao">Não</button>
+          <button type="button" class="pill-btn" id="dsrSim">Sim</button>
+        </div>
+        <div id="dsrDatesWrap">
+          <div id="dsrDateList"></div>
+          <button type="button" class="add-dsr" id="addDsrDate">+ adicionar outro dia de descanso</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="calc-btn" id="calcInterBtn">Calcular Retorno</button>
+
+    <div class="sum-box" id="boxInter" style="margin-top:22px; margin-bottom:0;">
+      <div class="val" id="valInter">--:--</div>
+      <div class="lbl" id="lblInter">Retorno permitido</div>
+    </div>
+
+    <div class="detail" id="detailInter"></div>
+  </div>
+
+  <footer>
+    Apoio à gestão de escalas com base nos arts. 66 e 71 da CLT e na Súmula 110 do TST. Convenções coletivas e regimes especiais podem alterar esses mínimos — não substitui análise jurídica.
+  </footer>
+
+</div>
+
+<script>
+const weekdayNames = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+function fmtWeekday(d){ return weekdayNames[d.getDay()]; }
+function fmtDate(d){ return d.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'}); }
+function fmtTime(d){ return d.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}); }
+function fmtHM(totalMinutes){
+  const h = Math.floor(totalMinutes/60);
+  const m = Math.round(totalMinutes%60);
+  return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+}
+
+document.getElementById('dataInter').value = new Date().toISOString().slice(0,10);
+
+// mode switch
+const modeIntraBtn = document.getElementById('modeIntraBtn');
+const modeInterBtn = document.getElementById('modeInterBtn');
+const panelIntra = document.getElementById('panelIntra');
+const panelInter = document.getElementById('panelInter');
+
+modeIntraBtn.addEventListener('click', ()=>{
+  modeIntraBtn.classList.add('selected');
+  modeInterBtn.classList.remove('selected');
+  panelIntra.classList.add('visible');
+  panelInter.classList.remove('visible');
+});
+modeInterBtn.addEventListener('click', ()=>{
+  modeInterBtn.classList.add('selected');
+  modeIntraBtn.classList.remove('selected');
+  panelInter.classList.add('visible');
+  panelIntra.classList.remove('visible');
+});
+
+// ---- INTRAJORNADA ----
+document.getElementById('calcIntraBtn').addEventListener('click', ()=>{
+  const entradaStr = document.getElementById('entrada').value;
+  const intIniStr = document.getElementById('intIni').value;
+  const intFimStr = document.getElementById('intFim').value;
+  const saidaStr = document.getElementById('saidaIntra').value;
+
+  const boxIntraEarly = document.getElementById('boxIntra');
+  const valIntraEarly = document.getElementById('valIntra');
+  const lblIntraEarly = document.getElementById('lblIntra');
+  if(!entradaStr || !saidaStr){
+    boxIntraEarly.className = 'sum-box bad';
+    valIntraEarly.textContent = '--:--';
+    lblIntraEarly.textContent = 'Preencha entrada e saída';
+    document.getElementById('detailIntra').style.display = 'none';
+    return;
+  }
+
+  const baseDate = '2000-01-01';
+  const entradaDT = new Date(baseDate + 'T' + entradaStr + ':00');
+  let saidaDT = new Date(baseDate + 'T' + saidaStr + ':00');
+  if(saidaDT <= entradaDT) saidaDT = new Date(saidaDT.getTime() + 24*3600*1000);
+
+  const jornadaBrutaMin = (saidaDT - entradaDT) / 60000;
+  const jornadaBrutaH = jornadaBrutaMin/60;
+
+  let intervaloMin = null;
+  if(intIniStr && intFimStr){
+    let iniDT = new Date(baseDate + 'T' + intIniStr + ':00');
+    let fimDT = new Date(baseDate + 'T' + intFimStr + ':00');
+    if(iniDT < entradaDT) iniDT = new Date(iniDT.getTime() + 24*3600*1000);
+    if(fimDT < iniDT) fimDT = new Date(fimDT.getTime() + 24*3600*1000);
+    intervaloMin = (fimDT - iniDT) / 60000;
+  }
+
+  let minRequired = 0;
+  let maxRequired = null;
+  if(jornadaBrutaH > 6){ minRequired = 60; maxRequired = 120; }
+  else if(jornadaBrutaH > 4) minRequired = 15;
+
+  const boxIntra = document.getElementById('boxIntra');
+  const valIntra = document.getElementById('valIntra');
+  const lblIntra = document.getElementById('lblIntra');
+  const detailIntra = document.getElementById('detailIntra');
+  detailIntra.style.display = 'flex';
+
+  let markClass, title, desc;
+
+  if(minRequired === 0){
+    boxIntra.className = 'sum-box active';
+    valIntra.textContent = intervaloMin !== null ? fmtHM(intervaloMin) : '00:00';
+    lblIntra.textContent = 'Sem intervalo obrigatório';
+    markClass = 'ok';
+    title = 'Sem intervalo obrigatório';
+    desc = `Jornada de ${jornadaBrutaH.toFixed(1)}h não exige intervalo (só é obrigatório acima de 4h).`;
+  } else if(intervaloMin === null){
+    boxIntra.className = 'sum-box bad';
+    valIntra.textContent = '--:--';
+    lblIntra.textContent = 'Informe o intervalo';
+    markClass = 'bad';
+    title = 'Intervalo não informado';
+    desc = `Jornada de ${jornadaBrutaH.toFixed(1)}h exige ${minRequired} min de intervalo. Preencha início e fim para verificar.`;
+  } else if(intervaloMin >= minRequired){
+    if(maxRequired !== null && intervaloMin > maxRequired){
+      boxIntra.className = 'sum-box warn';
+      valIntra.textContent = fmtHM(intervaloMin);
+      lblIntra.textContent = 'Acima do limite padrão';
+      markClass = 'warn';
+      title = 'Intervalo acima de 2h';
+      desc = `${fmtHM(intervaloMin)} de intervalo para uma jornada de ${jornadaBrutaH.toFixed(1)}h. O art. 71, caput, da CLT limita o intervalo a 2h, salvo acordo escrito ou convenção coletiva permitindo um intervalo maior — confirme se esse acordo existe.`;
+    } else {
+      boxIntra.className = 'sum-box ok';
+      valIntra.textContent = fmtHM(intervaloMin);
+      lblIntra.textContent = 'Dentro da legislação';
+      markClass = 'ok';
+      title = 'Intervalo regular';
+      desc = `${fmtHM(intervaloMin)} de intervalo para uma jornada de ${jornadaBrutaH.toFixed(1)}h — mínimo de ${minRequired} min${maxRequired?` e máximo de ${maxRequired/60}h`:''} (art. 71, CLT).`;
+    }
+  } else {
+    boxIntra.className = 'sum-box bad';
+    valIntra.textContent = fmtHM(intervaloMin);
+    lblIntra.textContent = `Faltam ${Math.round(minRequired-intervaloMin)} min`;
+    markClass = 'bad';
+    title = 'Intervalo insuficiente';
+    desc = `Jornada de ${jornadaBrutaH.toFixed(1)}h exige ${minRequired} min; foram concedidos ${fmtHM(intervaloMin)}. Faltam ${Math.round(minRequired-intervaloMin)} min — gera pagamento do período suprimido com 50% de acréscimo (art. 71, §4º, CLT).`;
+  }
+
+  const markSymbol = markClass==='ok' ? '✓' : (markClass==='warn' ? '!' : '✕');
+  detailIntra.innerHTML = `
+    <div class="mark ${markClass}">${markSymbol}</div>
+    <div class="text"><div class="title">${title}</div><div class="desc">${desc}</div></div>
+  `;
+});
+
+// ---- INTERJORNADA ----
+const dsrNaoBtn = document.getElementById('dsrNao');
+const dsrSimBtn = document.getElementById('dsrSim');
+const dsrDatesWrap = document.getElementById('dsrDatesWrap');
+const dsrDateList = document.getElementById('dsrDateList');
+
+function setDsr(on){
+  dsrNaoBtn.classList.toggle('selected', !on);
+  dsrSimBtn.classList.toggle('selected', on);
+  dsrDatesWrap.style.display = on ? 'block' : 'none';
+  if(on && dsrDateList.children.length === 0) addDsrDateRow();
+}
+dsrNaoBtn.addEventListener('click', ()=>setDsr(false));
+dsrSimBtn.addEventListener('click', ()=>setDsr(true));
+
+function addDsrDateRow(){
+  const row = document.createElement('div');
+  row.className = 'dsr-date-row';
+  row.innerHTML = `
+    <input type="date" class="dsr-date-input">
+    <span class="dsr-tag"></span>
+    <button type="button" class="remove-dsr">remover</button>
+  `;
+  dsrDateList.appendChild(row);
+  const input = row.querySelector('.dsr-date-input');
+  const tag = row.querySelector('.dsr-tag');
+  input.addEventListener('change', ()=>{
+    tag.textContent = input.value ? fmtWeekday(new Date(input.value+'T00:00:00')) : '';
+  });
+  row.querySelector('.remove-dsr').addEventListener('click', ()=>{
+    row.remove();
+    if(dsrDateList.children.length === 0) addDsrDateRow();
+  });
+}
+document.getElementById('addDsrDate').addEventListener('click', addDsrDateRow);
+
+document.getElementById('calcInterBtn').addEventListener('click', ()=>{
+  const dateStr = document.getElementById('dataInter').value;
+  const saidaStr = document.getElementById('saidaInter').value;
+
+  const boxInterEarly = document.getElementById('boxInter');
+  const valInterEarly = document.getElementById('valInter');
+  const lblInterEarly = document.getElementById('lblInter');
+
+  if(!dateStr || !saidaStr){
+    boxInterEarly.className = 'sum-box bad';
+    valInterEarly.textContent = '--:--';
+    lblInterEarly.textContent = 'Preencha data e saída';
+    document.getElementById('detailInter').style.display = 'none';
+    return;
+  }
+
+  const saidaDT = new Date(dateStr + 'T' + saidaStr + ':00');
+
+  const temDsr = dsrSimBtn.classList.contains('selected');
+  let dsrDateValues = [];
+  if(temDsr){
+    dsrDateValues = Array.from(dsrDateList.querySelectorAll('.dsr-date-input')).map(i=>i.value).filter(v=>v);
+    if(dsrDateValues.length === 0){
+      boxInterEarly.className = 'sum-box bad';
+      valInterEarly.textContent = '--:--';
+      lblInterEarly.textContent = 'Informe o dia do DSR/feriado';
+      document.getElementById('detailInter').style.display = 'none';
+      return;
+    }
+  }
+  const dsrCount = dsrDateValues.length;
+  const requiredHours = 11 + 24*dsrCount;
+  const earliestReturn = new Date(saidaDT.getTime() + requiredHours*3600*1000);
+
+  const boxInter = document.getElementById('boxInter');
+  const valInter = document.getElementById('valInter');
+  const lblInter = document.getElementById('lblInter');
+  boxInter.className = 'sum-box active';
+  valInter.textContent = fmtTime(earliestReturn);
+  lblInter.textContent = `${fmtWeekday(earliestReturn)}, ${fmtDate(earliestReturn)}`;
+
+  let desc = `Saída em ${fmtDate(saidaDT)} às ${fmtTime(saidaDT)}. Mínimo de ${requiredHours}h de descanso`;
+  if(dsrCount === 0){
+    desc += ' (11h de interjornada, art. 66 da CLT).';
+  } else {
+    const dsrLabels = dsrDateValues.sort().map(v=>{const d=new Date(v+'T00:00:00'); return fmtWeekday(d);}).join(', ');
+    desc += ` — 11h de interjornada mais 24h por dia de descanso (${dsrLabels}), conforme a Súmula 110/TST.`;
+  }
+
+  const detailInter = document.getElementById('detailInter');
+  detailInter.style.display = 'flex';
+  detailInter.innerHTML = `
+    <div class="mark ok">✓</div>
+    <div class="text"><div class="title">Retorno mais cedo permitido</div><div class="desc">${desc}</div></div>
+  `;
+});
+</script>
+
+</body>
+</html>
